@@ -1,6 +1,6 @@
 // OLE DB
 #define DBINITCONSTANTS // Initialize OLE constants...
-#define INITGUID        // ...once in each app
+#define INITGUID
 #include <windows.h>
 #include <stdio.h>
 #include <oledb.h>      // OLE DB include files
@@ -371,7 +371,7 @@ int main()
 	// Open the connection and initialize the data source specified by the passed
 	// initialization string.
 	// The connection information uses the Microsoft.ACE.OLEDB.12.0 data provider implemented in aceoledb.dll.
-	LPCOLESTR lpcOleConnect = L"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\Users\\Jim\\source\\repos\\CIS278_Week16_ODBC\\CIS278_Week16_ODBC\\student.accdb;User Id=;Password=;";
+	LPCOLESTR lpcOleConnect = L"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=student.accdb;User Id=;Password=;";
 	// To initialize the connection to a database using an OLE DB provider, 
 	// two ATL classes are needed: CDataSource and CSession.
 	CDataSource dbDataSource;
@@ -406,10 +406,6 @@ int main()
 				// open the dataset
 				hr = cmd.Open(dbSession, query);
 				DBORDINAL colCount = cmd.GetColumnCount();
-				//
-				//
-				//
-				colCount = 5;
 
 				if (SUCCEEDED(hr) && colCount > 0)
 				{
