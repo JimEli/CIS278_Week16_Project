@@ -1,10 +1,10 @@
 /*************************************************************************
-* Title: DAO Database Access EXample
-* File: CIS278_Week16_DAO.cpp
+* Title: DAO Access Database Access Example
+* File: DAO_Example.cpp
 * Author: James Eli
 * Date: 3/01/2018
 *
-* Direct Data Access Object (Direct DAO) example.
+* Data Access Object (DAO) example.
 *
 * Notes:
 *  (1) Requires MS Access 2007 driver, located here:
@@ -26,7 +26,7 @@ using namespace std;
 int main()
 {
 	// Hardcoded location of the database.
-	_bstr_t bstrConnect = "C:\\Users\\Jim\\source\\repos\\CIS278_Week16_DAO\\CIS278_Week16_DAO\\student.accdb";
+	_bstr_t bstrConnect = "student.accdb";
 
 	HRESULT hr = CoInitialize(NULL);
 	if (FAILED(hr))
@@ -36,7 +36,8 @@ int main()
 	}
 
 	// Create an instance of the engine.
-	DAO::_DBEngine* pEngine = NULL;
+	DAO::_DBEngine* pEngine = nullptr;
+	
 	// The CoCreateInstance helper function provides a convenient shortcut by connecting 
 	// to the class object associated with the specified CLSID, creating an 
 	// uninitialized instance, and releasing the class object. 
@@ -46,7 +47,7 @@ int main()
 		// COM errors are handled by the C++ try/catch block.
 		try
 		{
-			DAO::DatabasePtr pDbPtr = NULL;
+			DAO::DatabasePtr pDbPtr = nullptr;
 			pDbPtr = pEngine->OpenDatabase(bstrConnect);
 			if (pDbPtr)
 			{
@@ -57,13 +58,13 @@ int main()
 				cout << "SQL query:\n  " << query << endl;
 
 				// Excecute the query and create a record set.
-				DAO::RecordsetPtr pRS = NULL;
+				DAO::RecordsetPtr pRS = nullptr;
 				pRS = pDbPtr->OpenRecordset(query, _variant_t(DAO::dbOpenDynaset));
 				if (pRS && 0 < pRS->RecordCount)
 				{
 					cout << "Retrieve schema info for the given result set: " << endl;
 
-					DAO::FieldsPtr pFields = NULL;
+					DAO::FieldsPtr pFields = nullptr;
 					pFields = pRS->GetFields();
 					if (pFields && pFields->Count > 0)
 					{
@@ -100,7 +101,7 @@ int main()
 		}
 
 		pEngine->Release();
-		pEngine = NULL;
+		pEngine = nullptr;
 		cout << "Cleanup. Done." << endl;
 	}
 	else
