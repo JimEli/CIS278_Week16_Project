@@ -1,6 +1,6 @@
 /*************************************************************************
 * Title: ADO MS Access DB Example
-* File: main.cpp
+* File: ADO_Example.cpp
 * Author: James Eli
 * Date: 3/01/2018
 *
@@ -72,4 +72,3 @@ int main()
 	CoUninitialize();
 	return 0;
 }
-
