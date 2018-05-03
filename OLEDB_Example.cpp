@@ -1,4 +1,4 @@
-// OLE DB
+// OLE DB per: https://msdn.microsoft.com/en-us/library/ms810892.aspx
 #define DBINITCONSTANTS // Initialize OLE constants...
 #define INITGUID
 #include <windows.h>
