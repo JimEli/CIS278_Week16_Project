@@ -5,7 +5,7 @@
 * Date: 5/3/2018
 *
 * Notes:
-*  (1) Place the student.mdb db file inside the project folder.
+*  (1) Place the student.accdb file inside the project folder.
 *  (2) Add to project properties>General:
 *       Common Langauge Runtime Support: (/clr)
 *       .NET Target Framework Version: v4.5
@@ -25,7 +25,7 @@
 
 using namespace std;
 
-// ADO.NET definitions
+// ADO.NET definitions.
 #using <System.dll>
 #using <System.Data.dll>
 using namespace System::Data;
@@ -46,7 +46,7 @@ int main()
 		conn->Open();
 		cout << "Connection opened.\n";
 
-		// Create and populate a command
+		// Create and populate a command.
 		DbCommand^ cmd = fac->CreateCommand();
 		cmd->CommandText = "SELECT * FROM student ORDER BY id";
 		cmd->CommandType = CommandType::Text;
@@ -54,12 +54,12 @@ int main()
 
 		// Using a data adapter.
 
-		// Create a DataAdapter
+		// Create a DataAdapter.
 		DbDataAdapter^ adapter = fac->CreateDataAdapter();
-		// Use the command with the adapter
+		// Use the command with the adapter.
 		adapter->SelectCommand = cmd;
 		
-		// Create and fill a DataSet
+		// Create and fill a DataSet.
 		DataSet ^ds = gcnew DataSet("student");
 		adapter->Fill(ds, "studs");
 
@@ -91,7 +91,7 @@ int main()
 		int numberOfEntries = (int)cmd->ExecuteScalar();
 		cout << "Number of entries is " << numberOfEntries << endl;
 
-		// Insert a new entry
+		// Insert a new entry.
 		//cmd->CommandText = "INSERT INTO student VALUES ( 10, 'Donald', 'Trump', 'President', '2020')";
 		//int rowsAffected = cmd->ExecuteNonQuery();
 		//cout << "Added " << rowsAffected << " rows.\n";
