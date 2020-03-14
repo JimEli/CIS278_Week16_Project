@@ -230,7 +230,7 @@ int main(void)
     bool done = false;
 
     // Attempt to open db (no user id & pwd).
-    int rc = sqlite3_open("students.db", &db);
+    int rc = sqlite3_open("students_sqlite.db", &db);
 
     if (rc)
     {
