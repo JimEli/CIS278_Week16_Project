@@ -35,5 +35,5 @@ Notes:
 * Initally wanted to bind DB recordset to a C++ class, but found that difficult, inefficient and lacking good documentation or examples. However, without it the program is much simplified.
 * Program load/init time is excessive, I couldn't determine the cause.
 * Needs more input validation.
-* Compiled with MS Visual Studio 2017 Community (v141).
-* Submitted in partial fulfillment of the requirements of PCC CIS-278.
+* This code is a simple demonstration of basic database access techniques. As such, it is vulnerable to SQL Injection. Please alter any derivative code to protect against injection attacks.
+* Folder includes additional files showing ADO.Net, DAO, OLEDB, ODBC, MySQL and SQLite3 demonstrations.
