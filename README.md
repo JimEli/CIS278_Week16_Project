@@ -1,5 +1,6 @@
 # Pima CC CIS278 
 ## Week #16 Database Exercise
+### Folder includes additional files showing ADO.Net, DAO, OLEDB, ODBC, MySQL and SQLite3 demonstrations.
 
 Develop a C++ program to connect to a MS Access database ("Student.accdb" – provided on D2L) and use SQL commands to manipulate its records.
 
@@ -36,4 +37,3 @@ Notes:
 * Program load/init time is excessive, I couldn't determine the cause.
 * Needs more input validation.
 * This code is a simple demonstration of basic database access techniques. As such, it is vulnerable to SQL Injection. Please alter any derivative code to protect against injection attacks.
-* Folder includes additional files showing ADO.Net, DAO, OLEDB, ODBC, MySQL and SQLite3 demonstrations.
