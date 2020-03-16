@@ -1,4 +1,17 @@
-// SQLite3 demonstration.
+/*************************************************************************
+* Title: SQLite3 Example Project
+* File: sqlite3_Example.cpp
+* Author: James Eli
+* Date: 3/16/2020
+*
+* Note: This code is a simple demonstration of basic database access 
+* techniques. As such, it is vulnerable to SQL Injection. Please alter 
+* any derivative code to protect against injection attacks.
+*************************************************************************
+* Change Log:
+*   3/16/2020: Initial release. JME
+*************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
