@@ -1,23 +1,36 @@
-/*
-MySQL Query to create sample database:
+/*************************************************************************
+* Title: MySQL Example Project
+* File: mysql_example.cpp
+* Author: James Eli
+* Date: 3/16/2020
+*
+* Note: This code is a simple demonstration of basic database access 
+* techniques. As such, it is vulnerable to SQL Injection. Please alter 
+* any derivative code to protect against injection attacks.
+*
+* MySQL Query to create sample database:
+*
+* create database students;
+* use students;
+* -- Table structure for table `STUDENT`
+* DROP TABLE IF EXISTS `STUDENT`;
+* CREATE TABLE `STUDENT` (
+*   `ID` tinyint(4) DEFAULT NULL,
+*   `FirstName` varchar(6) DEFAULT NULL,
+*   `LastName` varchar(8) DEFAULT NULL,
+*   `Major` varchar(22) DEFAULT NULL,
+*   `Graduation Year` smallint(6) DEFAULT NULL
+* ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+* -- Dumping data for table `STUDENT`
+* LOCK TABLES `STUDENT` WRITE;
+* INSERT INTO `STUDENT` VALUES (1,'Joe','Doe','Computer Science',2018),(2,'Emma','Smith','Electrical Engineering',2019),(3,'Juan','Perez','Marketing',2019),(4,'Tom','Lee','Accounting',2020),(5,'Ella','Fenda','Finance',2019),(6,'Oliver','Torres','Business',2018),(7,'Lea','Martinez','Communication',2020),(8,'Jim','Eli','Basket Weaving',2020);
+* UNLOCK TABLES;
+*
+*************************************************************************
+* Change Log:
+*   3/16/2020: Initial release. JME
+*************************************************************************/
 
-create database students;
-use students;
--- Table structure for table `STUDENT`
-DROP TABLE IF EXISTS `STUDENT`;
-CREATE TABLE `STUDENT` (
-  `ID` tinyint(4) DEFAULT NULL,
-  `FirstName` varchar(6) DEFAULT NULL,
-  `LastName` varchar(8) DEFAULT NULL,
-  `Major` varchar(22) DEFAULT NULL,
-  `Graduation Year` smallint(6) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
--- Dumping data for table `STUDENT`
-LOCK TABLES `STUDENT` WRITE;
-INSERT INTO `STUDENT` VALUES (1,'Joe','Doe','Computer Science',2018),(2,'Emma','Smith','Electrical Engineering',2019),(3,'Juan','Perez','Marketing',2019),(4,'Tom','Lee','Accounting',2020),(5,'Ella','Fenda','Finance',2019),(6,'Oliver','Torres','Business',2018),(7,'Lea','Martinez','Communication',2020),(8,'Jim','Eli','Basket Weaving',2020);
-UNLOCK TABLES;
-
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
