@@ -4,15 +4,14 @@
 * Author: James Eli
 * Date: 3/16/2020
 *
-* Note: This code is a simple demonstration of basic database access 
-* techniques. As such, it is vulnerable to SQL Injection. Please alter 
+* Note: This code is a simple demonstration of basic database access
+* techniques. As such, it is vulnerable to SQL Injection. Please alter
 * any derivative code to protect against injection attacks.
 *
 * MySQL Query to create sample database:
 *
 * create database students;
 * use students;
-* -- Table structure for table `STUDENT`
 * DROP TABLE IF EXISTS `STUDENT`;
 * CREATE TABLE `STUDENT` (
 *   `ID` tinyint(4) DEFAULT NULL,
@@ -45,11 +44,16 @@
 #include <cppconn/prepared_statement.h>
 #include <cppconn/resultset.h>
 
-using namespace sql;
-
 // Constant data, acceptable year input.
 static const int CURRENT_YEAR{ 2018 };
 static const int MAX_GRAD_YEAR{ CURRENT_YEAR + 4 };
+
+void exceptionPrint(sql::SQLException& e)
+{
+    std::cout << "# ERR: " << e.what();
+    std::cout << " (MySQL error code: " << e.getErrorCode();
+    std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+}
 
 // Select and display all students in db table.
 void Select(sql::Connection* con)
@@ -79,9 +83,7 @@ void Select(sql::Connection* con)
     }
     catch (sql::SQLException & e)
     {
-        std::cout << "# ERR: " << e.what();
-        std::cout << " (MySQL error code: " << e.getErrorCode();
-        std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        exceptionPrint(e);
     }
 }
 
@@ -90,26 +92,26 @@ std::pair<int, int> getMinMaxId(sql::Connection* con)
 {
     int min{ 0 }, max{ 0 };
 
-    // Execute SQL statement.
     try
     {
         sql::Statement* stmt;
         sql::ResultSet* res;
         int i = 0;
 
+        // Execute SQL statement.
         stmt = con->createStatement();
         res = stmt->executeQuery("SELECT * FROM student ORDER BY id");
 
-        // Check for highest id.
+        // Check for highest & first missing id.
         while (res->next())
         {
             int n = res->getInt(1);
 
             if (min == 0 && ++i != n)
-                min = n;
+                min = n - 1;
 
             if (n > max)
-                max = n - 1;
+                max = n;
         }
 
         if (min == 0)
@@ -120,9 +122,7 @@ std::pair<int, int> getMinMaxId(sql::Connection* con)
     }
     catch (sql::SQLException & e)
     {
-        std::cout << "# ERR: " << e.what();
-        std::cout << " (MySQL error code: " << e.getErrorCode();
-        std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        exceptionPrint(e);
     }
 
     return std::make_pair(min, max);
@@ -148,10 +148,9 @@ void Remove(sql::Connection* con)
 
             delete prep_stmt;
         }
-        catch (sql::SQLException & e) {
-            std::cout << "# ERR: " << e.what();
-            std::cout << " (MySQL error code: " << e.getErrorCode();
-            std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        catch (sql::SQLException & e) 
+        {
+            exceptionPrint(e);
         }
     }
 }
@@ -169,7 +168,7 @@ void Update(sql::Connection* con)
     {
         try 
         {
-            PreparedStatement* prep_stmt;
+            sql::PreparedStatement* prep_stmt;
 
             prep_stmt = con->prepareStatement("UPDATE student SET `Graduation Year`=? WHERE id=?");
             prep_stmt->setInt(1, year);
@@ -180,9 +179,7 @@ void Update(sql::Connection* con)
         }
         catch (sql::SQLException & e) 
         {
-            std::cout << "# ERR: " << e.what();
-            std::cout << " (MySQL error code: " << e.getErrorCode();
-            std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+            exceptionPrint(e);
         }
     }
 }
@@ -203,20 +200,23 @@ void Insert(sql::Connection* con)
     {
         try
         {
-            // Construct a query string.
-            std::string s = "INSERT INTO student VALUES(" + std::to_string(id) + ",'" + fName + "','" + lName + "','" + major + "'," + std::to_string(year) + ")";
-            PreparedStatement* prep_stmt;
+            // Construct the query string.
+            std::string s = "INSERT INTO student VALUES( ?, ?, ?, ?, ? )";
+            sql::PreparedStatement* prep_stmt;
 
             prep_stmt = con->prepareStatement(s);
+            prep_stmt->setInt(1, id);
+            prep_stmt->setString(2, fName);
+            prep_stmt->setString(3, lName);
+            prep_stmt->setString(4, major);
+            prep_stmt->setInt(5, year);
             prep_stmt->execute();
 
             delete prep_stmt;
         }
         catch (sql::SQLException & e)
         {
-            std::cout << "# ERR: " << e.what();
-            std::cout << " (MySQL error code: " << e.getErrorCode();
-            std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+            exceptionPrint(e);
         }
     }
 }
@@ -283,11 +283,8 @@ int main(void)
     }
     catch (sql::SQLException & e)
     {
-        std::cout << "# ERR: " << e.what();
-        std::cout << " (MySQL error code: " << e.getErrorCode();
-        std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        exceptionPrint(e);
     }
     
     return 0;
 }
-
