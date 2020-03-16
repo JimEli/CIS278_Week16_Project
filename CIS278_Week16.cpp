@@ -5,7 +5,7 @@
 * Date: 3/01/2018
 *
 * Develop a C++ program to connect to a MS Access database
-* ("Student.accdb" ñ provided on D2L) and use SQL commands to manipulate
+* ("Student.accdb" ‚Äì provided on D2L) and use SQL commands to manipulate
 * its records.
 * The user will be given a menu to choose from the following options:
 *   1 - Press (S) to select and display all students records
@@ -26,7 +26,7 @@
 * a message to user that the student ID does not exist. If it exists, then
 * prompt the user to enter the new graduation year. The new graduation year
 * should be no later than 4 years from the current year. For example, if
-* the user enters ì2035î, you should display a message to the user saying
+* the user enters ‚Äú2035‚Äù, you should display a message to the user saying
 * invalid graduation year. Then prompt again to enter a valid year.
 * For user option #4, prompt the user to enter the first name, last name,
 * major, and graduation year. Note that the student ID will automatically
@@ -60,8 +60,11 @@
 *      However, without it the program is much simplified.
 *  (4) Program load/init time is excessive, I couldn't determine the cause.
 *  (5) Needs more input validation.
-*  (6) Compiled with MS Visual Studio 2017 Community (v141).
-*  (7) Submitted in partial fulfillment of the requirements of PCC CIS-278.
+*  (6) This code is a simple demonstration of basic database access 
+*      techniques. As such, it is vulnerable to SQL Injection. Please alter 
+*      any derivative code to protect against injection attacks.
+*  (7) Compiled with MS Visual Studio 2017 Community (v141).
+*  (8) Submitted in partial fulfillment of the requirements of PCC CIS-278.
 *************************************************************************
 * Change Log:
 *   03/01/2018: Initial release. JME
