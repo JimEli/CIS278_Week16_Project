@@ -1,4 +1,6 @@
 /*
+MySQL Query to create sample database:
+
 create database students;
 use students;
 -- Table structure for table `STUDENT`
@@ -14,6 +16,7 @@ CREATE TABLE `STUDENT` (
 LOCK TABLES `STUDENT` WRITE;
 INSERT INTO `STUDENT` VALUES (1,'Joe','Doe','Computer Science',2018),(2,'Emma','Smith','Electrical Engineering',2019),(3,'Juan','Perez','Marketing',2019),(4,'Tom','Lee','Accounting',2020),(5,'Ella','Fenda','Finance',2019),(6,'Oliver','Torres','Business',2018),(7,'Lea','Martinez','Communication',2020),(8,'Jim','Eli','Basket Weaving',2020);
 UNLOCK TABLES;
+
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,9 +33,6 @@ UNLOCK TABLES;
 #include <cppconn/resultset.h>
 
 using namespace sql;
-
-// Visual Leak Detector.
-#include "C:\Program Files (x86)\Visual Leak Detector\include\vld.h"
 
 // Constant data, acceptable year input.
 static const int CURRENT_YEAR{ 2018 };
@@ -96,7 +96,7 @@ std::pair<int, int> getMinMaxId(sql::Connection* con)
                 min = n;
 
             if (n > max)
-                max = n;
+                max = n - 1;
         }
 
         if (min == 0)
@@ -277,137 +277,4 @@ int main(void)
     
     return 0;
 }
-
-#if 0
-
-// See url for more info: http://www.cyberciti.biz/tips/linux-unix-connect-mysql-c-api-program.html 
-#include <stdio.h>
-#include <mysql.h>
-
-int main(void)
-{
-    MYSQL* conn;
-    MYSQL_RES* res;
-    MYSQL_ROW row;
-
-    /* Change me */
-    const char* server = "localhost";
-    const char* user = "root";
-    const char* password = "1qaz!QAZ";
-    const char* database = "employeedb";
-
-    conn = mysql_init(NULL);
-
-    /* Connect to database */
-    if (!mysql_real_connect(conn, server, user, password, database, 0, NULL, 0))
-    {
-        fprintf(stderr, "%s\n", mysql_error(conn));
-        exit(1);
-    }
-
-    /* send SQL query */
-    if (mysql_query(conn, "show tables"))
-    {
-        fprintf(stderr, "%s\n", mysql_error(conn));
-        exit(1);
-    }
-
-    res = mysql_use_result(conn);
-
-    /* output table name */
-    printf("MySQL Tables in mysql database:\n");
-    while ((row = mysql_fetch_row(res)) != NULL)
-        printf("%s \n", row[0]);
-
-    /* close connection */
-    mysql_free_result(res);
-    mysql_close(conn);
-
-    return 0;
-}
-//#endif
-//#if 0
-
-// mySQL script: create database test;
-
-/* Standard C++ includes */
-#include <stdlib.h>
-#include <iostream>
-
-/*
-  Include directly the different
-  headers from cppconn/ and mysql_driver.h + mysql_util.h
-  (and mysql_connection.h). This will reduce your build time!
-*/
-#include "mysql_connection.h"
-#include <cppconn/driver.h>
-#include <cppconn/exception.h>
-#include <cppconn/resultset.h>
-#include <cppconn/statement.h>
-#include <cppconn/prepared_statement.h>
-
-using namespace std;
-
-int main(void)
-{
-    cout << endl;
-    cout << "Let's have MySQL count from 10 to 1..." << endl;
-
-    try
-    {
-        sql::Driver* driver;
-        sql::Connection* con;
-        sql::Statement* stmt;
-        sql::ResultSet* res;
-        sql::PreparedStatement* pstmt;
-
-        /* Create a connection */
-        driver = get_driver_instance();
-        //con = driver->connect("tcp://127.0.0.1:3306", "root", "root");
-        con = driver->connect("tcp://127.0.0.1:3306", "admin", "password");
-        /* Connect to the MySQL test database */
-        con->setSchema("test");
-
-        stmt = con->createStatement();
-        stmt->execute("DROP TABLE IF EXISTS test");
-        stmt->execute("CREATE TABLE test(id INT)");
-        delete stmt;
-
-        /* '?' is the supported placeholder syntax */
-        pstmt = con->prepareStatement("INSERT INTO test(id) VALUES (?)");
-        for (int i = 1; i <= 10; i++)
-        {
-            pstmt->setInt(1, i);
-            pstmt->executeUpdate();
-        }
-        delete pstmt;
-
-        /* Select in ascending order */
-        pstmt = con->prepareStatement("SELECT id FROM test ORDER BY id ASC");
-        res = pstmt->executeQuery();
-
-        /* Fetch in reverse = descending order! */
-        res->afterLast();
-        while (res->previous())
-            cout << "\t... MySQL counts: " << res->getInt("id") << endl;
-        delete res;
-
-        delete pstmt;
-        delete con;
-
-    }
-    catch (sql::SQLException & e)
-    {
-        cout << "# ERR: SQLException in " << __FILE__;
-        cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-        cout << "# ERR: " << e.what();
-        cout << " (MySQL error code: " << e.getErrorCode();
-        cout << ", SQLState: " << e.getSQLState() << " )" << endl;
-    }
-
-    cout << endl;
-
-    return EXIT_SUCCESS;
-}
-#endif
 
