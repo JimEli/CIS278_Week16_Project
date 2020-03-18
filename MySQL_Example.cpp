@@ -44,27 +44,27 @@
 #include <cppconn/prepared_statement.h>
 #include <cppconn/resultset.h>
 
+// Visual Leak Detector.
+#include "C:\Program Files (x86)\Visual Leak Detector\include\vld.h"
+
 // Constant data, acceptable year input.
 static const int CURRENT_YEAR{ 2018 };
 static const int MAX_GRAD_YEAR{ CURRENT_YEAR + 4 };
 
 void exceptionPrint(sql::SQLException& e)
 {
-    std::cout << "# ERR: " << e.what();
+    std::cout << "SQL Exception: " << e.what();
     std::cout << " (MySQL error code: " << e.getErrorCode();
     std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
 }
 
 // Select and display all students in db table.
-void Select(sql::Connection* con)
+void Select(std::shared_ptr<sql::Connection> con)
 {
     try 
     {
-        sql::Statement* stmt;
-        sql::ResultSet* res;
-
-        stmt = con->createStatement();
-        res = stmt->executeQuery("SELECT * FROM student ORDER BY id");
+        std::unique_ptr<sql::Statement> stmt(con->createStatement());
+        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM student ORDER BY id"));
 
         // Display header.
         std::cout << "ID  First Name Last Name Major" + std::string(19, ' ') + "Grad Year\n";
@@ -78,29 +78,32 @@ void Select(sql::Connection* con)
             std::cout << res->getInt(5) << std::endl;
         }
 
-        delete res;
-        delete stmt;
+        res.reset(NULL);
     }
     catch (sql::SQLException & e)
     {
         exceptionPrint(e);
     }
+    catch (std::runtime_error & e) 
+    {
+        std::cout << "# ERR: runtime_error in " << __FILE__;
+        std::cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << std::endl;
+        std::cout << "# ERR: " << e.what() << std::endl;
+        std::cout << "not ok 1 - examples/exceptions.cpp" << std::endl;
+    }
 }
 
 // Get highest (last) id number in db.
-std::pair<int, int> getMinMaxId(sql::Connection* con)
+std::pair<int, int> getMinMaxId(std::shared_ptr<sql::Connection> con)
 {
     int min{ 0 }, max{ 0 };
 
     try
     {
-        sql::Statement* stmt;
-        sql::ResultSet* res;
-        int i = 0;
-
         // Execute SQL statement.
-        stmt = con->createStatement();
-        res = stmt->executeQuery("SELECT * FROM student ORDER BY id");
+        std::unique_ptr<sql::Statement> stmt(con->createStatement());
+        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM student ORDER BY id"));
+        int i = 0;
 
         // Check for highest & first missing id.
         while (res->next())
@@ -116,9 +119,6 @@ std::pair<int, int> getMinMaxId(sql::Connection* con)
 
         if (min == 0)
             min = max + 1;
-
-        delete res;
-        delete stmt;
     }
     catch (sql::SQLException & e)
     {
@@ -127,11 +127,11 @@ std::pair<int, int> getMinMaxId(sql::Connection* con)
 
     return std::make_pair(min, max);
 }
-int getMinId(sql::Connection* con) { return getMinMaxId(con).first; }
-int getMaxId(sql::Connection* con) { return getMinMaxId(con).second; }
+int getMinId(std::shared_ptr<sql::Connection> con) { return getMinMaxId(con).first; }
+int getMaxId(std::shared_ptr<sql::Connection> con) { return getMinMaxId(con).second; }
 
 // Delete student from db table.
-void Remove(sql::Connection* con)
+void Remove(std::shared_ptr<sql::Connection> con)
 {
     int id{ 0 }, maxId{ getMaxId(con) };
 
@@ -140,13 +140,9 @@ void Remove(sql::Connection* con)
     {
         try 
         {
-            sql::PreparedStatement* prep_stmt;
-
-            prep_stmt = con->prepareStatement("DELETE FROM student WHERE id=?");
+            std::unique_ptr<sql::PreparedStatement> prep_stmt(con->prepareStatement("DELETE FROM student WHERE id=?"));
             prep_stmt->setInt(1, id);
             prep_stmt->execute();
-
-            delete prep_stmt;
         }
         catch (sql::SQLException & e) 
         {
@@ -156,26 +152,21 @@ void Remove(sql::Connection* con)
 }
 
 // Update the graduation year field of a specified record.
-void Update(sql::Connection* con)
+void Update(std::shared_ptr<sql::Connection> con)
 {
     int id{ 0 };
     int year{ 0 };
     int maxId{ getMaxId(con) };
-
-    // get a student id and new graduation year.
+        // get a student id and new graduation year.
     if (getNumber<int>("Enter student ID # to update: ", id, 1, maxId) &&
         getNumber<int>("Enter new graduation year: ", year, CURRENT_YEAR, MAX_GRAD_YEAR))
     {
         try 
         {
-            sql::PreparedStatement* prep_stmt;
-
-            prep_stmt = con->prepareStatement("UPDATE student SET `Graduation Year`=? WHERE id=?");
+            std::unique_ptr<sql::PreparedStatement> prep_stmt(con->prepareStatement("UPDATE student SET `Graduation Year`=? WHERE id=?"));
             prep_stmt->setInt(1, year);
             prep_stmt->setInt(2, id);
             prep_stmt->execute();
-
-            delete prep_stmt;
         }
         catch (sql::SQLException & e) 
         {
@@ -185,7 +176,7 @@ void Update(sql::Connection* con)
 }
 
 // Insert new student into db table.
-void Insert(sql::Connection* con)
+void Insert(std::shared_ptr<sql::Connection> con)
 {
     int year{ 0 };
     int id{ getMinId(con) };
@@ -202,17 +193,13 @@ void Insert(sql::Connection* con)
         {
             // Construct the query string.
             std::string s = "INSERT INTO student VALUES( ?, ?, ?, ?, ? )";
-            sql::PreparedStatement* prep_stmt;
-
-            prep_stmt = con->prepareStatement(s);
+            std::unique_ptr<sql::PreparedStatement> prep_stmt(con->prepareStatement(s));
             prep_stmt->setInt(1, id);
             prep_stmt->setString(2, fName);
             prep_stmt->setString(3, lName);
             prep_stmt->setString(4, major);
             prep_stmt->setInt(5, year);
             prep_stmt->execute();
-
-            delete prep_stmt;
         }
         catch (sql::SQLException & e)
         {
@@ -225,11 +212,10 @@ int main(void)
 {
     try {
         sql::Driver* driver;
-        sql::Connection* con;
 
         std::cout << "connecting to mysql server....";
         driver = get_driver_instance();
-        con = driver->connect("tcp://127.0.0.1:3306", "admin", "password");
+        std::shared_ptr<sql::Connection> con(driver->connect("tcp://127.0.0.1:3306", "admin", "password"));
         con->setSchema("students");
         std::cout << "connected" << std::endl;
 
@@ -268,7 +254,6 @@ int main(void)
             case Choice::OPTION_5:
             case Choice::QUIT:
                 // Quit.
-                delete con;
                 done = true;
                 break;
 
@@ -288,3 +273,4 @@ int main(void)
     
     return 0;
 }
+
