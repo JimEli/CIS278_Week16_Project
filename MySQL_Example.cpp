@@ -1,4 +1,4 @@
-/*************************************************************************
+***********************************************
 * Title: MySQL Example Project
 * File: mysql_example.cpp
 * Author: James Eli
@@ -22,14 +22,7 @@
 * ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 * -- Dumping data for table `STUDENT`
 * LOCK TABLES `STUDENT` WRITE;
-* INSERT INTO `STUDENT` VALUES (1,'Joe','Doe','Computer Science',2018),
-(2,'Emma','Smith','Electrical Engineering',2019),
-(3,'Juan','Perez','Marketing',2019),
-(4,'Tom','Lee','Accounting',2020),
-(5,'Ella','Fenda','Finance',2019),
-(6,'Oliver','Torres','Business',2018),
-(7,'Lea','Martinez','Communication',2020),
-(8,'Jim','Eli','Basket Weaving',2020);
+* INSERT INTO `STUDENT` VALUES (1,'Joe','Doe','Computer Science',2018),(2,'Emma','Smith','Electrical Engineering',2019),(3,'Juan','Perez','Marketing',2019),(4,'Tom','Lee','Accounting',2020),(5,'Ella','Fenda','Finance',2019),(6,'Oliver','Torres','Business',2018),(7,'Lea','Martinez','Communication',2020),(8,'Jim','Eli','Basket Weaving',2020);
 * UNLOCK TABLES;
 *
 *************************************************************************
@@ -58,45 +51,22 @@
 static const int CURRENT_YEAR{ 2018 };
 static const int MAX_GRAD_YEAR{ CURRENT_YEAR + 4 };
 
-void exceptionPrint(sql::SQLException& e)
-{
-    std::cout << "SQL Exception: " << e.what();
-    std::cout << " (MySQL error code: " << e.getErrorCode();
-    std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
-}
-
 // Select and display all students in db table.
 void Select(std::shared_ptr<sql::Connection> con)
 {
-    try 
-    {
-        std::unique_ptr<sql::Statement> stmt(con->createStatement());
-        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM student ORDER BY id"));
+    std::unique_ptr<sql::Statement> stmt(con->createStatement());
+    std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM student ORDER BY id"));
 
-        // Display header.
-        std::cout << "ID  First Name Last Name Major" + std::string(19, ' ') + "Grad Year\n";
+    // Display header.
+    std::cout << "ID  First Name Last Name Major" + std::string(19, ' ') + "Grad Year\n";
 
-        while (res->next()) 
-        {
-            std::cout << std::left << std::setw(4) << res->getInt(1);
-            std::cout << std::setw(11) << res->getString(2);
-            std::cout << std::setw(10) << res->getString(3);
-            std::cout << std::setw(24) << res->getString(4);
-            std::cout << res->getInt(5) << std::endl;
-        }
-
-        res.reset(NULL);
-    }
-    catch (sql::SQLException & e)
+    while (res->next())
     {
-        exceptionPrint(e);
-    }
-    catch (std::runtime_error & e) 
-    {
-        std::cout << "# ERR: runtime_error in " << __FILE__;
-        std::cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << std::endl;
-        std::cout << "# ERR: " << e.what() << std::endl;
-        std::cout << "not ok 1 - examples/exceptions.cpp" << std::endl;
+        std::cout << std::left << std::setw(4) << res->getInt(1);
+        std::cout << std::setw(11) << res->getString(2);
+        std::cout << std::setw(10) << res->getString(3);
+        std::cout << std::setw(24) << res->getString(4);
+        std::cout << res->getInt(5) << std::endl;
     }
 }
 
@@ -105,32 +75,25 @@ std::pair<int, int> getMinMaxId(std::shared_ptr<sql::Connection> con)
 {
     int min{ 0 }, max{ 0 };
 
-    try
+    // Execute SQL statement.
+    std::unique_ptr<sql::Statement> stmt(con->createStatement());
+    std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM student ORDER BY id"));
+    int i = 0;
+
+    // Check for highest & first missing id.
+    while (res->next())
     {
-        // Execute SQL statement.
-        std::unique_ptr<sql::Statement> stmt(con->createStatement());
-        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM student ORDER BY id"));
-        int i = 0;
+        int n = res->getInt(1);
 
-        // Check for highest & first missing id.
-        while (res->next())
-        {
-            int n = res->getInt(1);
+        if (min == 0 && ++i != n)
+            min = n - 1;
 
-            if (min == 0 && ++i != n)
-                min = n - 1;
-
-            if (n > max)
-                max = n;
-        }
-
-        if (min == 0)
-            min = max + 1;
+        if (n > max)
+            max = n;
     }
-    catch (sql::SQLException & e)
-    {
-        exceptionPrint(e);
-    }
+
+    if (min == 0)
+        min = max + 1;
 
     return std::make_pair(min, max);
 }
@@ -145,16 +108,9 @@ void Remove(std::shared_ptr<sql::Connection> con)
     // Get student id to delete.
     if (getNumber<int>("Enter student ID # to delete: ", id, 1, maxId))
     {
-        try 
-        {
-            std::unique_ptr<sql::PreparedStatement> prep_stmt(con->prepareStatement("DELETE FROM student WHERE id=?"));
-            prep_stmt->setInt(1, id);
-            prep_stmt->execute();
-        }
-        catch (sql::SQLException & e) 
-        {
-            exceptionPrint(e);
-        }
+        std::unique_ptr<sql::PreparedStatement> prep_stmt(con->prepareStatement("DELETE FROM student WHERE id=?"));
+        prep_stmt->setInt(1, id);
+        prep_stmt->execute();
     }
 }
 
@@ -168,17 +124,10 @@ void Update(std::shared_ptr<sql::Connection> con)
     if (getNumber<int>("Enter student ID # to update: ", id, 1, maxId) &&
         getNumber<int>("Enter new graduation year: ", year, CURRENT_YEAR, MAX_GRAD_YEAR))
     {
-        try 
-        {
-            std::unique_ptr<sql::PreparedStatement> prep_stmt(con->prepareStatement("UPDATE student SET `Graduation Year`=? WHERE id=?"));
-            prep_stmt->setInt(1, year);
-            prep_stmt->setInt(2, id);
-            prep_stmt->execute();
-        }
-        catch (sql::SQLException & e) 
-        {
-            exceptionPrint(e);
-        }
+        std::unique_ptr<sql::PreparedStatement> prep_stmt(con->prepareStatement("UPDATE student SET `Graduation Year`=? WHERE id=?"));
+        prep_stmt->setInt(1, year);
+        prep_stmt->setInt(2, id);
+        prep_stmt->execute();
     }
 }
 
@@ -194,30 +143,25 @@ void Insert(std::shared_ptr<sql::Connection> con)
     GetString("Enter first name: ", fName);
     GetString("Enter last name: ", lName);
     GetString("Enter major: ", major);
+
     if (getNumber<int>("Enter graduation year: ", year, CURRENT_YEAR, MAX_GRAD_YEAR))
     {
-        try
-        {
-            // Construct the query string.
-            std::string s = "INSERT INTO student VALUES( ?, ?, ?, ?, ? )";
-            std::unique_ptr<sql::PreparedStatement> prep_stmt(con->prepareStatement(s));
-            prep_stmt->setInt(1, id);
-            prep_stmt->setString(2, fName);
-            prep_stmt->setString(3, lName);
-            prep_stmt->setString(4, major);
-            prep_stmt->setInt(5, year);
-            prep_stmt->execute();
-        }
-        catch (sql::SQLException & e)
-        {
-            exceptionPrint(e);
-        }
+        // Construct the query string.
+        std::string s = "INSERT INTO student VALUES( ?, ?, ?, ?, ? )";
+        std::unique_ptr<sql::PreparedStatement> prep_stmt(con->prepareStatement(s));
+        prep_stmt->setInt(1, id);
+        prep_stmt->setString(2, fName);
+        prep_stmt->setString(3, lName);
+        prep_stmt->setString(4, major);
+        prep_stmt->setInt(5, year);
+        prep_stmt->execute();
     }
 }
 
 int main(void)
 {
-    try {
+    try 
+    {
         sql::Driver* driver;
 
         std::cout << "connecting to mysql server....";
@@ -275,9 +219,17 @@ int main(void)
     }
     catch (sql::SQLException & e)
     {
-        exceptionPrint(e);
+        std::cout << "SQL Exception: " << e.what();
+        std::cout << " (MySQL error code: " << e.getErrorCode();
+        std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
     }
-    
+    catch (std::runtime_error & e)
+    {
+        std::cout << "Runtime_error in " << __FILE__;
+        std::cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << std::endl;
+        std::cout << "Error: " << e.what() << std::endl;
+        std::cout << "not ok 1 - examples/exceptions.cpp" << std::endl;
+    }
+
     return 0;
 }
-
