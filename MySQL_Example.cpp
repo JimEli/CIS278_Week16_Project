@@ -22,7 +22,14 @@
 * ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 * -- Dumping data for table `STUDENT`
 * LOCK TABLES `STUDENT` WRITE;
-* INSERT INTO `STUDENT` VALUES (1,'Joe','Doe','Computer Science',2018),(2,'Emma','Smith','Electrical Engineering',2019),(3,'Juan','Perez','Marketing',2019),(4,'Tom','Lee','Accounting',2020),(5,'Ella','Fenda','Finance',2019),(6,'Oliver','Torres','Business',2018),(7,'Lea','Martinez','Communication',2020),(8,'Jim','Eli','Basket Weaving',2020);
+* INSERT INTO `STUDENT` VALUES (1,'Joe','Doe','Computer Science',2018),
+(2,'Emma','Smith','Electrical Engineering',2019),
+(3,'Juan','Perez','Marketing',2019),
+(4,'Tom','Lee','Accounting',2020),
+(5,'Ella','Fenda','Finance',2019),
+(6,'Oliver','Torres','Business',2018),
+(7,'Lea','Martinez','Communication',2020),
+(8,'Jim','Eli','Basket Weaving',2020);
 * UNLOCK TABLES;
 *
 *************************************************************************
