@@ -1,4 +1,4 @@
-***********************************************
+/*************************************************************************
 * Title: MySQL Example Project
 * File: mysql_example.cpp
 * Author: James Eli
@@ -22,8 +22,24 @@
 * ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 * -- Dumping data for table `STUDENT`
 * LOCK TABLES `STUDENT` WRITE;
-* INSERT INTO `STUDENT` VALUES (1,'Joe','Doe','Computer Science',2018),(2,'Emma','Smith','Electrical Engineering',2019),(3,'Juan','Perez','Marketing',2019),(4,'Tom','Lee','Accounting',2020),(5,'Ella','Fenda','Finance',2019),(6,'Oliver','Torres','Business',2018),(7,'Lea','Martinez','Communication',2020),(8,'Jim','Eli','Basket Weaving',2020);
+* INSERT INTO `STUDENT` VALUES 
+(1,'Joe','Doe','Computer Science',2018),
+(2,'Emma','Smith','Electrical Engineering',2019),
+(3,'Juan','Perez','Marketing',2019),
+(4,'Tom','Lee','Accounting',2020),
+(5,'Ella','Fenda','Finance',2019),
+(6,'Oliver','Torres','Business',2018),
+(7,'Lea','Martinez','Communication',2020),
+(8,'Jim','Eli','Basket Weaving',2020);
 * UNLOCK TABLES;
+*
+* DROP PROCEDURE IF EXISTS Student.delete_student;
+* DELIMITER $$
+* CREATE PROCEDURE delete_student(IN ident TINYINT)
+* BEGIN
+*   DELETE FROM student WHERE id=ident
+* END $$
+* DELIMITER ;
 *
 *************************************************************************
 * Change Log:
@@ -44,9 +60,6 @@
 #include <cppconn/prepared_statement.h>
 #include <cppconn/resultset.h>
 
-// Visual Leak Detector.
-#include "C:\Program Files (x86)\Visual Leak Detector\include\vld.h"
-
 // Constant data, acceptable year input.
 static const int CURRENT_YEAR{ 2018 };
 static const int MAX_GRAD_YEAR{ CURRENT_YEAR + 4 };
@@ -59,7 +72,9 @@ void Select(std::shared_ptr<sql::Connection> con)
 
     // Display header.
     std::cout << "ID  First Name Last Name Major" + std::string(19, ' ') + "Grad Year\n";
-
+    
+    std::ios oldState(nullptr);
+    oldState.copyfmt(std::cout);
     while (res->next())
     {
         std::cout << std::left << std::setw(4) << res->getInt(1);
@@ -68,12 +83,12 @@ void Select(std::shared_ptr<sql::Connection> con)
         std::cout << std::setw(24) << res->getString(4);
         std::cout << res->getInt(5) << std::endl;
     }
+    std::cout.copyfmt(oldState);
 }
 
-// Get highest (last) id number in db.
-std::pair<int, int> getMinMaxId(std::shared_ptr<sql::Connection> con)
+int getEmptyId(std::shared_ptr<sql::Connection> con)
 {
-    int min{ 0 }, max{ 0 };
+    size_t min{ 0 };
 
     // Execute SQL statement.
     std::unique_ptr<sql::Statement> stmt(con->createStatement());
@@ -87,18 +102,22 @@ std::pair<int, int> getMinMaxId(std::shared_ptr<sql::Connection> con)
 
         if (min == 0 && ++i != n)
             min = n - 1;
-
-        if (n > max)
-            max = n;
     }
 
     if (min == 0)
-        min = max + 1;
+        min = res->rowsCount() + 1;
 
-    return std::make_pair(min, max);
+    return static_cast<int>(min);
 }
-int getMinId(std::shared_ptr<sql::Connection> con) { return getMinMaxId(con).first; }
-int getMaxId(std::shared_ptr<sql::Connection> con) { return getMinMaxId(con).second; }
+
+int getMaxId(std::shared_ptr<sql::Connection> con)
+{
+    // Execute SQL statement.
+    std::unique_ptr<sql::Statement> stmt(con->createStatement());
+    std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT * FROM student ORDER BY id"));
+
+    return static_cast<int>(res->rowsCount());
+}
 
 // Delete student from db table.
 void Remove(std::shared_ptr<sql::Connection> con)
@@ -108,9 +127,10 @@ void Remove(std::shared_ptr<sql::Connection> con)
     // Get student id to delete.
     if (getNumber<int>("Enter student ID # to delete: ", id, 1, maxId))
     {
-        std::unique_ptr<sql::PreparedStatement> prep_stmt(con->prepareStatement("DELETE FROM student WHERE id=?"));
-        prep_stmt->setInt(1, id);
-        prep_stmt->execute();
+        // Call a stored procedure.
+        std::unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement("CALL delete_student(?)"));
+        pstmt->setInt(1, id);
+        pstmt->execute();
     }
 }
 
@@ -120,7 +140,8 @@ void Update(std::shared_ptr<sql::Connection> con)
     int id{ 0 };
     int year{ 0 };
     int maxId{ getMaxId(con) };
-        // get a student id and new graduation year.
+
+    // get a student id and new graduation year.
     if (getNumber<int>("Enter student ID # to update: ", id, 1, maxId) &&
         getNumber<int>("Enter new graduation year: ", year, CURRENT_YEAR, MAX_GRAD_YEAR))
     {
@@ -135,7 +156,7 @@ void Update(std::shared_ptr<sql::Connection> con)
 void Insert(std::shared_ptr<sql::Connection> con)
 {
     int year{ 0 };
-    int id{ getMinId(con) };
+    int id{ getEmptyId(con) };
     std::string fName{ "" }, lName{ "" }, major{ "" };
 
     // Get new student data.
@@ -156,6 +177,40 @@ void Insert(std::shared_ptr<sql::Connection> con)
         prep_stmt->setInt(5, year);
         prep_stmt->execute();
     }
+}
+
+// Access information_schema to get db information.
+void informationSchema(std::shared_ptr<sql::Connection> con)
+{
+    sql::Statement* stmt = con->createStatement();
+    sql::ResultSet* rs = stmt->executeQuery("SELECT * FROM student");
+    sql::ResultSetMetaData* res_meta = rs->getMetaData();
+
+    int numcols = res_meta->getColumnCount();
+
+    std::cout << "\nNumber of columns in the result set = " << numcols << std::endl;
+    std::cout.width(17);
+    std::cout << "Column Name/Label";
+    std::cout.width(13);
+    std::cout << "Column Type";
+    std::cout.width(14);
+    std::cout << "Column Size\n";
+
+    for (int i = 0; i < numcols; ++i) 
+    {
+        std::cout.width(17);
+        std::cout << res_meta->getColumnLabel(i + 1);
+        std::cout.width(13);
+        std::cout << res_meta->getColumnTypeName(i + 1);
+        std::cout.width(13);
+        std::cout << res_meta->getColumnDisplaySize(i + 1) << std::endl;
+    }
+
+    std::cout << "Column \"" << res_meta->getColumnLabel(1);
+    std::cout << "\" belongs to the Table: \"" << res_meta->getTableName(1);
+    std::cout << "\" which belongs to the Schema: \"" << res_meta->getSchemaName(1) << "\"" << std::endl;
+
+    delete rs;
 }
 
 int main(void)
@@ -206,6 +261,11 @@ int main(void)
             case Choice::QUIT:
                 // Quit.
                 done = true;
+                break;
+
+            case Choice::OPTION_6:
+                // Information_Schema.
+                informationSchema(con);
                 break;
 
             case Choice::INVALID:
