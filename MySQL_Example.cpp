@@ -86,6 +86,21 @@ void Select(std::shared_ptr<sql::Connection> con)
     std::cout.copyfmt(oldState);
 }
 
+int getMinId(std::shared_ptr<sql::Connection> con)
+{
+    // Execute SQL statement.
+    std::unique_ptr<sql::Statement> stmt(con->createStatement());
+    std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT min(ID) FROM student"));
+
+    if (res->rowsCount())
+    {
+        res->next();
+        return res->getInt(1);
+    }
+
+    return -1;
+}
+
 int getEmptyId(std::shared_ptr<sql::Connection> con)
 {
     size_t min{ 0 };
